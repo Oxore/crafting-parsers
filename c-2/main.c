@@ -686,7 +686,7 @@ void pars_deinit(pars_t *self) {
                     factor_t *factor = term->first;
                     if (factor->type == FEXPRESSION && factor->expr) {
                         // Put on the expressions "stack" to free it later
-                        // in next interation of `while (expr) in order to
+                        // in next interation of `while (expr)` in order to
                         // mitigate recursive calls
                         factor->expr->back = expr->back;
                         expr->back = factor->expr;
