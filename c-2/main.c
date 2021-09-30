@@ -117,7 +117,7 @@ static bool is_character(int c) { return c >= 0x20 && c <= 0x7E; }
 
 static bool is_letter(int c) {
     return (c >= 0x30 && c <= 0x39) || (c >= 0x41 && c <= 0x5A) ||
-           (c >= 0x61 && c <= 0x7A);
+           (c >= 0x61 && c <= 0x7A) || c == '-' || c == '_';
 }
 
 static bool is_single_char_token(int c) {
@@ -132,7 +132,7 @@ static bool is_space(int c) {
 void lex_init(lex_t *self) {
     *self = (lex_t){
         .state = LIDLE,
-        .source = calloc(1024, 1),
+        .source = calloc(1024*100, 1),
         .line = 1,
         .col = 1,
     };
@@ -378,7 +378,7 @@ void lex_print_err(lex_t const *self) {
     fprintf(
         stderr,
         "error lexing <stdin>:%lu:%lu: unexpected token `%s`, "
-        "expected %s",
+        "expected %s\n",
         self->line,
         self->col,
         byte_printable(self->source[self->offset]),
@@ -660,7 +660,7 @@ void pars_print_err(pars_t const *self) {
         fprintf(
             stderr,
             "error: parsing <stdin>:%lu:%lu: unexpected token `%.*s`, "
-            "expected %s",
+            "expected %s\n",
             token->line,
             token->col,
             len,
