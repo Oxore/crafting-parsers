@@ -1,0 +1,61 @@
+program        = { declaration } .
+
+declaration    = class-decl
+               | fun-decl
+               | var-decl
+               | statement .
+class-decl      = "class" IDENTIFIER [ "<" IDENTIFIER ] "{" { function } "}" .
+fun-decl       = "fun" function .
+var-decl       = "var" IDENTIFIER [ "=" expression ] ";" .
+
+statement      = expr-stmt
+               | for-stmt
+               | if-stmt
+               | print-stmt
+               | return-stmt
+               | while-stmt
+               | block .
+expr-stmt      = expression ";" .
+for-stmt       = "for" "(" ( var-decl | expr-stmt | ";" )
+                           [ expression ] ";"
+                           [ expression ] ")" statement .
+if-stmt        = "if" "(" expression ")" statement [ "else" statement ] .
+print-stmt     = "print" expression ";" .
+return-stmt    = "return" [ expression ] ";" .
+while-stmt     = "while" "(" expression ")" statement .
+block          = "{" { declaration } "}" .
+
+expression     = assignment .
+assignment     = [ call "." ] IDENTIFIER "=" assignment
+               | logic_or .
+logic_or       = logic_and { "or" logic_and } .
+logic_and      = equality { "and" equality } .
+equality       = comparison { ( "!=" | "==" ) comparison } .
+comparison     = term { ( ">" | ">=" | "<" | "<=" ) term } .
+term           = factor { ( "-" | "+" ) factor } .
+factor         = unary { ( "/" | "*" ) unary } .
+unary          = ( "!" | "-" ) unary | call .
+call           = primary { "(" [ arguments ] ")" | "." IDENTIFIER } .
+primary        = "true"
+               | "false"
+               | "nil"
+               | "this"
+               | NUMBER
+               | STRING
+               | IDENTIFIER
+               | "(" expression ")"
+               | "super" "." IDENTIFIER .
+
+NUMBER         = DIGIT { DIGIT } [ "." DIGIT { DIGIT } ] .
+STRING         = """" { CHARACTER } """" .
+IDENTIFIER     = ALPHA { ALPHA | DIGIT } .
+
+CHARACTER = " " | "!" | "#" | "$" | "%" | "&" | "'" | "(" | ")" | "*" | "+"
+          | "," | "." | "/" | ":" | ";" | "<" | "=" | ">" | "?" | "@" | "["
+          | "\" | "]" | "%" | "`" | "{" | "|" | "}" | "~" | "\""" | ALPHA .
+DIGIT = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "_" .
+ALPHA = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L"
+      | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X"
+      | "Y" | "Z" | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j"
+      | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v"
+      | "w" | "x" | "y" | "z" | "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" .
