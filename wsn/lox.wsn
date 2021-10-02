@@ -4,7 +4,7 @@ declaration    = class-decl
                | fun-decl
                | var-decl
                | statement .
-class-decl      = "class" IDENTIFIER [ "<" IDENTIFIER ] "{" { function } "}" .
+class-decl     = "class" IDENTIFIER [ "<" IDENTIFIER ] "{" { function } "}" .
 fun-decl       = "fun" function .
 var-decl       = "var" IDENTIFIER [ "=" expression ] ";" .
 
@@ -49,6 +49,7 @@ primary        = "true"
 NUMBER         = DIGIT { DIGIT } [ "." DIGIT { DIGIT } ] .
 STRING         = """" { CHARACTER } """" .
 IDENTIFIER     = ALPHA { ALPHA | DIGIT } .
+COMMENT        = "//" { CHARACTER } 0x0A .
 
 CHARACTER = " " | "!" | "#" | "$" | "%" | "&" | "'" | "(" | ")" | "*" | "+"
           | "," | "." | "/" | ":" | ";" | "<" | "=" | ">" | "?" | "@" | "["
