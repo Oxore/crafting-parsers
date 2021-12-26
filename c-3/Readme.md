@@ -65,8 +65,6 @@ primary        = "true"
                | "(" expression ")"
                | "super" "." IDENTIFIER .
 
-function       = IDENTIFIER "(" [ parameters ] ")" block .
-parameters     = IDENTIFIER { "," IDENTIFIER } .
 arguments      = expression { "," expression } .
 
 NUMBER         = DIGIT { DIGIT } [ "." DIGIT { DIGIT } ] .

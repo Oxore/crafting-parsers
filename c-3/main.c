@@ -240,11 +240,6 @@ typedef struct {
     char const *source;
 } pars_t;
 
-typedef struct {
-    bool has_err;
-    char const *source;
-} interp_t;
-
 void lex_init(lex_t *self, char *source) {
     *self = (lex_t){
         .source = source,
@@ -1119,7 +1114,7 @@ static void pars_push(pars_t *self) {
 static void add_expr(pars_t *self, expression_t *expr) {
     pars_stack_frame_t *stack = self->stack;
     if (stack->expr) {
-        expression_t* sexpr = stack->expr;
+        expression_t *sexpr = stack->expr;
         if (expr->type == EXCALL) {
             assert(sexpr);
             expr->call.callee = sexpr;
@@ -1145,7 +1140,8 @@ static void add_expr(pars_t *self, expression_t *expr) {
     }
 }
 
-statement_t *pars_consume(pars_t *self, token_t const *token, expression_t* nested) {
+statement_t *
+pars_consume(pars_t *self, token_t const *token, expression_t *nested) {
     switch (self->stack->state) {
     case PEXPR:
         if (token->type == TLPAREN) {
@@ -1440,42 +1436,13 @@ void pars_deinit(pars_t *self) {
     }
 }
 
-void interp_init(interp_t *self, char const *source) {
-    *self = (interp_t){
-        .source = source,
-    };
-}
-
-static void interp_print_result(interp_t *self) {
-    (void)self;
-    ;
-}
-
-status_t interp_exec(interp_t *self, expression_t const *expr) {
-    (void)expr;
-    interp_print_result(self);
-    return STATUS_OK;
-}
-
-void interp_print_error(interp_t *self) {
-    (void)self;
-    ;
-}
-
-void interp_deinit(interp_t *self) {
-    (void)self;
-    ;
-}
-
 int main() {
     char *source = calloc(1, BUFFER_SIZE);
     CHECK_ALLOC(source);
     lex_t lex;
     pars_t pars;
-    interp_t interp;
     lex_init(&lex, source);
     pars_init(&pars, source);
-    interp_init(&interp, source);
     char c;
     do {
         c = getchar();
@@ -1493,7 +1460,6 @@ int main() {
             token = token->next;
         }
     } while (c != EOF);
-    interp_deinit(&interp);
     pars_deinit(&pars);
     lex_deinit(&lex);
     free(source);
