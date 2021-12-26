@@ -1,0 +1,17 @@
+//comment
+!a;
+!(a);
+!(-a);
+---!!!-(-!--!!a);
+true;
+false;
+(true);
+true();
+a.b(false);
+true.name(arg, !arg2, -!(100), 200);
+a.b + c.d and true.e or false.jf == 20 * !gg;
+true.call() >= !(!false).call(a < b().aa);
+super.__ctor__();
+a = 10 + 1;
+b = (c = d);
+b = c.do(thing.touch().thiss + true == false).member = d(1, 2);
