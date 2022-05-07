@@ -24,6 +24,7 @@ const TokenType = enum {
         options: std.fmt.FormatOptions,
         writer: anytype,
     ) !void {
+        _ = options;
         if (fmt.len == 1 and fmt[0] == 's') {
             switch (self) {
                 .lbrace => _ = try writer.write("lbrace"),
@@ -69,6 +70,7 @@ const TokenFormatter = struct {
         options: std.fmt.FormatOptions,
         writer: anytype,
     ) !void {
+        _ = options;
         if (fmt.len == 1 and fmt[0] == 's') {
             try writer.print("{s}", .{
                 self.source[self.token.offset .. self.token.offset + self.token.len],
@@ -109,10 +111,10 @@ const Lex = struct {
     have_err: bool = false,
     first: ?*Token = null,
     last: ?*Token = null,
-    allocator: *mem.Allocator,
+    allocator: mem.Allocator,
     source: []u8,
 
-    pub fn init(allocator: *mem.Allocator) Self {
+    pub fn init(allocator: mem.Allocator) Self {
         return Self{
             .allocator = allocator,
             .source = allocator.alloc(u8, 1024) catch unreachable,
@@ -143,6 +145,7 @@ const Lex = struct {
     }
 
     fn continueToken(self: *Self, token: *Token) void {
+        _ = self;
         token.len += 1;
     }
 
@@ -174,7 +177,7 @@ const Lex = struct {
             ' ', '\t', '\n', '\r' => {
                 self.state = LexState.idle;
             },
-            '0'...'9' => |digit| {
+            '0'...'9' => |_| {
                 if (self.state == LexState.number or self.state == LexState.word) {
                     self.continueToken(self.last.?);
                 } else self.addToken(TokenType.number);
@@ -261,6 +264,7 @@ const LexErrFormatter = struct {
         options: std.fmt.FormatOptions,
         writer: anytype,
     ) !void {
+        _ = options;
         if (fmt.len == 1 and fmt[0] == 's') {
             try writer.print("<stdin>:{d}:{d}: unexpected char \"{c}\", expected {s}", .{
                 self.line,
@@ -287,6 +291,7 @@ const NodeType = enum {
         options: std.fmt.FormatOptions,
         writer: anytype,
     ) !void {
+        _ = options;
         if (fmt.len == 1 and fmt[0] == 's') {
             switch (self) {
                 .kv => _ = try writer.write("kv"),
@@ -296,7 +301,7 @@ const NodeType = enum {
                 .word => _ = try writer.write("word"),
             }
         } else @compileError(
-            "Only {s} specifier can be used for " ++ @typeName(Self) ++ " formatting",
+            "Only {s} specifier can be used for " ++ @typeName(@This()) ++ " formatting",
         );
     }
 };
@@ -329,7 +334,7 @@ const Node = struct {
     col: usize,
     len: usize,
 
-    fn newRoot(allocator: *mem.Allocator) *Self {
+    fn newRoot(allocator: mem.Allocator) *Self {
         var self = allocator.create(Node) catch unreachable;
         self.* = Self{
             .data = NodeUnion{ .map = ListNode{} },
@@ -341,7 +346,7 @@ const Node = struct {
         return self;
     }
 
-    fn newArray(allocator: *mem.Allocator, token: *Token) *Self {
+    fn newArray(allocator: mem.Allocator, token: *Token) *Self {
         var self = allocator.create(Self) catch unreachable;
         self.* = Self{
             .data = NodeUnion{ .array = ListNode{} },
@@ -353,7 +358,7 @@ const Node = struct {
         return self;
     }
 
-    fn newMap(allocator: *mem.Allocator, token: *Token) *Self {
+    fn newMap(allocator: mem.Allocator, token: *Token) *Self {
         var self = allocator.create(Self) catch unreachable;
         self.* = Self{
             .data = NodeUnion{ .map = ListNode{} },
@@ -365,7 +370,7 @@ const Node = struct {
         return self;
     }
 
-    fn newWord(allocator: *mem.Allocator, token: *Token) *Self {
+    fn newWord(allocator: mem.Allocator, token: *Token) *Self {
         var self = allocator.create(Self) catch unreachable;
         self.* = Self{
             .data = NodeType.word,
@@ -377,7 +382,7 @@ const Node = struct {
         return self;
     }
 
-    fn newNumber(allocator: *mem.Allocator, token: *Token) *Self {
+    fn newNumber(allocator: mem.Allocator, token: *Token) *Self {
         var self = allocator.create(Self) catch unreachable;
         self.* = Self{
             .data = NodeType.number,
@@ -389,7 +394,7 @@ const Node = struct {
         return self;
     }
 
-    fn newKeyValue(allocator: *mem.Allocator, key: *Self, value: *Self) *Self {
+    fn newKeyValue(allocator: mem.Allocator, key: *Self, value: *Self) *Self {
         var self = allocator.create(Self) catch unreachable;
         self.* = Self{
             .data = NodeUnion{ .kv = KVNode{ .key = key, .value = value } },
@@ -401,7 +406,7 @@ const Node = struct {
         return self;
     }
 
-    fn destroy(self: *Self, allocator: *mem.Allocator) void {
+    fn destroy(self: *Self, allocator: mem.Allocator) void {
         switch (self.data) {
             .kv => |kv| {
                 kv.value.destroy(allocator);
@@ -448,6 +453,7 @@ const NodeFormatter = struct {
     }
 
     pub fn pretty(node: *const Node, source: []const u8, level: usize) Self {
+        _ = level;
         return Self{
             .node = node,
             .source = source,
@@ -461,6 +467,7 @@ const NodeFormatter = struct {
         options: std.fmt.FormatOptions,
         writer: anytype,
     ) !void {
+        _ = options;
         if (fmt.len == 1 and (fmt[0] == 's' or fmt[0] == 'd')) {
             switch (self.node.data) {
                 .map => |map| {
@@ -561,10 +568,10 @@ const Pars = struct {
     state: ParsState = ParsState.key_root,
     last_token: ?*Token = null,
     root: ?*Node = null,
-    allocator: *mem.Allocator,
+    allocator: mem.Allocator,
     source: []const u8,
 
-    pub fn init(allocator: *mem.Allocator, source: []const u8) Self {
+    pub fn init(allocator: mem.Allocator, source: []const u8) Self {
         return Self{
             .allocator = allocator,
             .source = source,
@@ -633,7 +640,6 @@ const Pars = struct {
         };
         var node = Node.newMap(self.allocator, lbrace_token);
         errdefer node.destroy(self.allocator);
-        var map = &node.data.map;
         if (!root) {
             token_ptr.* = lbrace_token.next;
             self.state = ParsState.key;
@@ -771,17 +777,20 @@ const Pars = struct {
 };
 
 const ParsErrFormatter = struct {
+    const Self = @This();
+
     token: Token,
     expected: []const u8,
     source: []const u8,
     err: Pars.ParsErr,
 
     pub fn format(
-        self: @This(),
+        self: Self,
         comptime fmt: []const u8,
         options: std.fmt.FormatOptions,
         writer: anytype,
     ) !void {
+        _ = options;
         if (fmt.len == 1 and fmt[0] == 's') {
             switch (self.err) {
                 Pars.ParsErr.InvalidToken => {
@@ -801,7 +810,7 @@ const ParsErrFormatter = struct {
                 },
             }
         } else @compileError(
-            "Only {s} specifier can be used for " ++ @typeName(@This()) ++ " formatting",
+            "Only {s} specifier can be used for " ++ @typeName(Self) ++ " formatting",
         );
     }
 };
@@ -809,7 +818,7 @@ const ParsErrFormatter = struct {
 pub fn main() !void {
     var gpalloc = std.heap.GeneralPurposeAllocator(.{}){};
     defer assert(!gpalloc.deinit());
-    const allocator = &gpalloc.allocator;
+    const allocator = gpalloc.allocator();
     const reader = &std.io.getStdIn().reader();
     const writer = &std.io.getStdOut().writer();
     _ = writer.write(">") catch unreachable;
