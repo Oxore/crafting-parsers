@@ -279,9 +279,9 @@ const LexErrFormatter = struct {
 };
 
 const NodeType = enum {
-    kv,
     map,
     array,
+    kv,
     number,
     word,
 
@@ -294,8 +294,8 @@ const NodeType = enum {
         _ = options;
         if (fmt.len == 1 and fmt[0] == 's') {
             switch (self) {
-                .kv => _ = try writer.write("kv"),
                 .map => _ = try writer.write("map"),
+                .kv => _ = try writer.write("kv"),
                 .array => _ = try writer.write("array"),
                 .number => _ = try writer.write("number"),
                 .word => _ = try writer.write("word"),
@@ -335,7 +335,7 @@ const Node = struct {
     len: usize,
 
     fn newRoot(allocator: mem.Allocator) *Self {
-        var self = allocator.create(Node) catch unreachable;
+        const self = allocator.create(Node) catch unreachable;
         self.* = Self{
             .data = NodeUnion{ .map = ListNode{} },
             .offset = 0,
@@ -347,7 +347,7 @@ const Node = struct {
     }
 
     fn newArray(allocator: mem.Allocator, token: *Token) *Self {
-        var self = allocator.create(Self) catch unreachable;
+        const self = allocator.create(Self) catch unreachable;
         self.* = Self{
             .data = NodeUnion{ .array = ListNode{} },
             .offset = token.offset,
@@ -359,7 +359,7 @@ const Node = struct {
     }
 
     fn newMap(allocator: mem.Allocator, token: *Token) *Self {
-        var self = allocator.create(Self) catch unreachable;
+        const self = allocator.create(Self) catch unreachable;
         self.* = Self{
             .data = NodeUnion{ .map = ListNode{} },
             .offset = token.offset,
@@ -371,7 +371,7 @@ const Node = struct {
     }
 
     fn newWord(allocator: mem.Allocator, token: *Token) *Self {
-        var self = allocator.create(Self) catch unreachable;
+        const self = allocator.create(Self) catch unreachable;
         self.* = Self{
             .data = NodeType.word,
             .offset = token.offset,
@@ -383,7 +383,7 @@ const Node = struct {
     }
 
     fn newNumber(allocator: mem.Allocator, token: *Token) *Self {
-        var self = allocator.create(Self) catch unreachable;
+        const self = allocator.create(Self) catch unreachable;
         self.* = Self{
             .data = NodeType.number,
             .offset = token.offset,
@@ -395,7 +395,7 @@ const Node = struct {
     }
 
     fn newKeyValue(allocator: mem.Allocator, key: *Self, value: *Self) *Self {
-        var self = allocator.create(Self) catch unreachable;
+        const self = allocator.create(Self) catch unreachable;
         self.* = Self{
             .data = NodeUnion{ .kv = KVNode{ .key = key, .value = value } },
             .offset = key.offset,
@@ -416,7 +416,7 @@ const Node = struct {
             .map, .array => |list| {
                 var node_ptr = list.first;
                 while (node_ptr) |node| {
-                    var next = node.next;
+                    const next = node.next;
                     node.destroy(allocator);
                     node_ptr = next;
                 }
@@ -585,7 +585,7 @@ const Pars = struct {
 
     pub fn parse(self: *Self, tokens_: ?*Token) ParsErr!void {
         var tokens: ?*Token = tokens_;
-        var token_ptr: *?*Token = &tokens;
+        const token_ptr: *?*Token = &tokens;
         self.root = try self.parseMap(token_ptr);
     }
 
@@ -652,7 +652,7 @@ const Pars = struct {
                         node.len = token.offset + token.len;
                         return node;
                     } else if (token.type == TokenType.word) {
-                        var kv = try self.parseKv(token_ptr);
+                        const kv = try self.parseKv(token_ptr);
                         if (!root) {
                             self.state = ParsState.map_delim;
                         } else {
@@ -681,7 +681,7 @@ const Pars = struct {
                 else => unreachable,
             }
             self.last_token = token_ptr.*;
-            var current_token = token_ptr.* orelse break;
+            const current_token = token_ptr.* orelse break;
             token_ptr.* = current_token.next;
         }
         if (!root) {
@@ -694,7 +694,7 @@ const Pars = struct {
         var node = Node.newArray(self.allocator, array_token);
         errdefer node.destroy(self.allocator);
         var array = &node.data.array;
-        var arr_node_token = token_ptr.* orelse return error.EndOfStream;
+        const arr_node_token = token_ptr.* orelse return error.EndOfStream;
         token_ptr.* = arr_node_token.next;
         self.state = ParsState.arr_node;
         while (token_ptr.*) |token| {
@@ -705,7 +705,7 @@ const Pars = struct {
                         node.len = token.offset + token.len;
                         return node;
                     } else if (token.type == TokenType.lbracket) {
-                        var map = try self.parseArray(token_ptr);
+                        const map = try self.parseArray(token_ptr);
                         self.state = ParsState.arr_delim;
                         if (array.last) |last| {
                             last.next = map;
@@ -714,7 +714,7 @@ const Pars = struct {
                         }
                         array.last = map;
                     } else if (token.type == TokenType.lbrace) {
-                        var map = try self.parseMap(token_ptr);
+                        const map = try self.parseMap(token_ptr);
                         self.state = ParsState.arr_delim;
                         if (array.last) |last| {
                             last.next = map;
@@ -723,7 +723,7 @@ const Pars = struct {
                         }
                         array.last = map;
                     } else if (token.type == TokenType.word or token.type == TokenType.number) {
-                        var value = try self.parseValue(token_ptr);
+                        const value = try self.parseValue(token_ptr);
                         self.state = ParsState.arr_delim;
                         if (array.last) |last| {
                             last.next = value;
@@ -746,7 +746,7 @@ const Pars = struct {
                 else => unreachable,
             }
             self.last_token = token_ptr.*;
-            var current_token = token_ptr.* orelse break;
+            const current_token = token_ptr.* orelse break;
             token_ptr.* = current_token.next;
         }
         return error.EndOfStream;
@@ -758,7 +758,7 @@ const Pars = struct {
         }
     }
 
-    pub fn print(self: *Self, writer: *std.fs.File.Writer) void {
+    pub fn print(self: *Self, writer: *const std.fs.File.Writer) void {
         if (self.root) |root| {
             writer.print("{s}\n", .{
                 NodeFormatter.pretty(root, self.source, 0),
@@ -817,13 +817,13 @@ const ParsErrFormatter = struct {
 
 pub fn main() !void {
     var gpalloc = std.heap.GeneralPurposeAllocator(.{}){};
-    defer assert(!gpalloc.deinit());
+    defer assert(std.heap.Check.ok == gpalloc.deinit());
     const allocator = gpalloc.allocator();
     const reader = &std.io.getStdIn().reader();
     const writer = &std.io.getStdOut().writer();
     _ = writer.write(">") catch unreachable;
     const data = reader.readAllAlloc(allocator, std.math.maxInt(usize)) catch |err| {
-        log.err("{s}", .{err});
+        log.err("{}", .{err});
         return;
     };
     defer allocator.free(data);
